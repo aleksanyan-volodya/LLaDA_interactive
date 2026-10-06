@@ -54,7 +54,9 @@ if OVERFIT:
 
 # ---------------- paths ----------------
 if os.path.exists("/kaggle"):
-    DATA_DIR = os.path.dirname(glob.glob("/kaggle/input/**/train.npy", recursive=True)[0])
+    found_data = glob.glob("/kaggle/input/**/train.npy", recursive=True)
+    assert found_data, "no train.npy under /kaggle/input: attach the dataset made by prepare_data.py (Add Input)"
+    DATA_DIR = os.path.dirname(found_data[0])
     OUT_DIR = "/kaggle/working"
     CKPT_SEARCH = ["/kaggle/working/ckpt.pt"] + glob.glob("/kaggle/input/**/ckpt.pt", recursive=True)
 else:
