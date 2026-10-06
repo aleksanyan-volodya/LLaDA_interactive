@@ -34,7 +34,7 @@ if SMOKE:
 else:
     MODEL = Config()
     BATCH_SIZE = 64          # 64 x 256 = 16k tokens per step
-    MAX_STEPS = 30_000       # ~500M tokens, about 1 epoch. Set it after measuring throughput on Kaggle.
+    MAX_STEPS = 60_000       # ~1B tokens. At 37k tok/s on the T4: ~7.4h, fits in TIME_BUDGET_H.
     WARMUP_STEPS = 1000
     LR = 6e-4                # not tuned, see the review notes
     LOG_EVERY, EVAL_EVERY = 100, 1000
