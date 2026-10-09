@@ -1,0 +1,16 @@
+[theme]
+base = "dark"
+primaryColor = "#A78BFA"
+backgroundColor = "#0B0E1A"
+secondaryBackgroundColor = "#151A2E"
+textColor = "#E7E9F3"
+borderColor = "#262C47"
+baseRadius = "12px"
+font = "Inter:https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+headingFont = "Fraunces:https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&display=swap"
+
+[theme.sidebar]
+backgroundColor = "#10142A"
+
+[client]
+toolbarMode = "minimal"
