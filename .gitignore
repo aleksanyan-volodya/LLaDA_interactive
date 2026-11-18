@@ -1,6 +1,31 @@
+# Python / uv
 .venv/
 __pycache__/
+*.pyc
+
+# Data, checkpoints and exported models (too big for git; the final model is on Hugging Face)
 data/
-*.pt
 out/
-results*
+results*/
+web_model/
+*.pt
+*.onnx
+*.npy
+
+# Kaggle notebooks synced by Kaggle (copies of the .py scripts)
+*.ipynb
+.ipynb_checkpoints/
+
+# Personal notes, images, documents, archives
+todo.md
+*.png
+*.jpg
+*.pdf
+*.mp4
+*.zip
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+.streamlit/

@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mini-LLaDA</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='14' font-size='14' fill='%23A78BFA'>✦</text></svg>">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Literata:opsz,wght@7..72,400;7..72,600&family=Fraunces:opsz,wght@9..144,600&display=swap">
+<style>
+:root {
+  --accent: #A78BFA; --accent2: #F472B6; --new: #FCD34D; --given: #7DD3FC;
+  --text: #E7E9F3; --muted: #8A90AD; --card: rgba(19, 25, 50, 0.78); --line: rgba(167, 139, 250, 0.18);
+  --field: #151A2E; --border: #262C47; --panel: #10142A;
+}
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; color: var(--text); font-family: 'Inter', system-ui, sans-serif; background:
+  radial-gradient(60rem 30rem at 10% -10%, rgba(167, 139, 250, 0.16), transparent 60%),
+  radial-gradient(50rem 30rem at 95% 0%, rgba(244, 114, 182, 0.10), transparent 60%),
+  radial-gradient(60rem 40rem at 50% 120%, rgba(125, 211, 252, 0.07), transparent 60%), #0B0E1A; }
+.page { max-width: 1400px; margin: 0 auto; padding: 1.4rem 1rem 2rem; }
+button { font: inherit; color: inherit; cursor: pointer; }
+[hidden] { display: none !important; }
+
+.top { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.4rem; }
+.eyebrow { color: var(--accent); font-size: 0.78rem; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; }
+.title { display: inline-block; font-family: 'Fraunces', Georgia, serif; font-size: clamp(2.3rem, 7vw, 3.2rem); font-weight: 600; line-height: 1.1;
+         margin: 0.25rem 0; background: linear-gradient(90deg, var(--accent), var(--accent2) 55%, var(--new));
+         -webkit-background-clip: text; background-clip: text; color: transparent; }
+.subtitle { color: var(--muted); font-size: 1.05rem; max-width: 46rem; line-height: 1.6; margin: 0; }
+.chips { display: flex; flex-wrap: wrap; gap: 0.45rem; margin-top: 0.9rem; }
+.chip { border: 1px solid var(--line); background: rgba(167, 139, 250, 0.08); color: var(--text);
+        border-radius: 999px; padding: 0.15rem 0.7rem; font-size: 0.8rem; white-space: nowrap; }
+
+.seg { display: inline-flex; border: 1px solid var(--border); border-radius: 12px; padding: 3px; background: var(--field); }
+.seg button { border: 0; background: transparent; color: var(--muted); padding: 0.4rem 0.9rem; border-radius: 9px; }
+.seg button.on { background: rgba(167, 139, 250, 0.2); color: var(--text); }
+.primary { border: 0; border-radius: 12px; padding: 0.65rem 1.4rem; font-weight: 600; color: #160D2B; white-space: nowrap;
+  background: linear-gradient(120deg, var(--accent), var(--accent2)); box-shadow: 0 8px 24px rgba(167, 139, 250, 0.25); }
+.primary:hover { filter: brightness(1.08); }
+
+.scenes { display: grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); gap: 0.8rem; margin-bottom: 1.2rem; }
+.scene-btn { min-height: 5.6rem; text-align: left; padding: 0.9rem 1rem; border-radius: 16px; border: 1px solid var(--line);
+  background: var(--card); backdrop-filter: blur(8px); color: var(--muted); font-size: 0.85rem; line-height: 1.45;
+  transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s; }
+.scene-btn:hover { transform: translateY(-3px); border-color: var(--accent); box-shadow: 0 10px 30px rgba(167, 139, 250, 0.18); }
+.scene-btn.on { background: linear-gradient(var(--card), var(--card)) padding-box,
+                            linear-gradient(120deg, var(--accent), var(--accent2), var(--new)) border-box;
+  border: 1.5px solid transparent; box-shadow: 0 10px 34px rgba(167, 139, 250, 0.25); }
+.scene-btn strong { display: block; color: var(--text); font-family: 'Fraunces', Georgia, serif;
+  font-size: 1.12rem; font-weight: 600; margin: 0.15rem 0 0.1rem; }
+
+.row { display: flex; justify-content: space-between; align-items: flex-end; gap: 1rem; flex-wrap: wrap; }
+.scene-head { display: flex; align-items: baseline; gap: 0.8rem; margin: 0.2rem 0 0.4rem; flex-wrap: wrap; }
+.scene-num { font-family: 'Fraunces', Georgia, serif; font-size: 2.6rem; line-height: 1; font-weight: 600;
+  background: linear-gradient(120deg, var(--accent), var(--accent2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.scene-title { font-family: 'Fraunces', Georgia, serif; font-size: 1.9rem; color: var(--text); }
+.scene-tag { color: var(--muted); font-size: 1rem; }
+.note { border-left: 3px solid var(--accent); background: rgba(167, 139, 250, 0.07); border-radius: 0 12px 12px 0;
+  padding: 0.7rem 1rem; color: var(--text); font-size: 0.98rem; line-height: 1.55; max-width: 60rem; }
+.note b { color: var(--accent); font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; display: block; margin-bottom: 0.15rem; }
+.legend { display: flex; flex-wrap: wrap; gap: 1.2rem; color: var(--muted); font-size: 0.85rem; align-items: center; min-height: 2.6rem; margin: 0.6rem 0; }
+.legend span { display: inline-flex; align-items: center; gap: 0.4rem; }
+
+.main { display: grid; gap: 1.5rem; }
+.main.pg { grid-template-columns: 18rem minmax(0, 1fr); }
+.panel { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 0.4rem 1.1rem 1.1rem; align-self: start; }
+.panel h3 { font-family: 'Fraunces', Georgia, serif; font-weight: 600; font-size: 1.1rem; margin: 1rem 0 0.5rem; }
+.panel label { display: block; font-size: 0.85rem; color: var(--muted); margin-bottom: 0.8rem; }
+.panel label output { float: right; color: var(--text); font-variant-numeric: tabular-nums; }
+.panel input:not([type]), .panel input[type=number], .panel select { display: block; width: 100%; margin-top: 0.3rem; padding: 0.5rem 0.7rem;
+  background: var(--field); color: var(--text); border: 1px solid var(--border); border-radius: 10px; font: inherit; font-size: 0.92rem; }
+.panel input:focus, .panel select:focus { outline: 1px solid var(--accent); }
+.panel input[type=range] { display: block; width: 100%; margin-top: 0.4rem; accent-color: var(--accent); }
+.panel .toggle { display: flex; align-items: center; gap: 0.5rem; color: var(--text); margin-top: 1rem; }
+.panel .toggle input { accent-color: var(--accent); width: 1rem; height: 1rem; }
+.panel .seg { margin-top: 0.3rem; }
+
+.cards.one { width: 75%; margin: 0 auto; }
+.cards.two { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.error { border: 1px solid rgba(244, 114, 182, 0.5); background: rgba(244, 114, 182, 0.1); border-radius: 12px; padding: 0.8rem 1rem; }
+.card { background: linear-gradient(180deg, rgba(167, 139, 250, 0.08), rgba(167, 139, 250, 0.01)), var(--card);
+  backdrop-filter: blur(10px); border: 1px solid var(--line); border-radius: 20px; padding: 1.25rem 1.5rem 1rem;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.05); }
+.card-head { display: flex; justify-content: space-between; align-items: center; gap: 0.8rem; flex-wrap: wrap; }
+.card-title { font-family: 'Fraunces', Georgia, serif; font-size: 1.35rem; color: var(--text); }
+.card .chips { margin-top: 0; }
+.bar { height: 4px; border-radius: 4px; background: rgba(255, 255, 255, 0.06); margin: 0.9rem 0 1rem; overflow: hidden; }
+.bar div { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--accent), var(--accent2), var(--new)); }
+.story { font-family: 'Literata', Georgia, serif; font-size: 1.22rem; line-height: 2.05; color: var(--text); min-height: 8rem; overflow-wrap: anywhere; }
+.card-foot { display: flex; justify-content: space-between; gap: 0.5rem; color: var(--muted); font-size: 0.8rem; margin-top: 0.8rem;
+  border-top: 1px solid var(--line); padding-top: 0.6rem; font-variant-numeric: tabular-nums; }
+
+.m { display: inline-block; width: 1.5em; height: 0.95em; margin: 0 2px; vertical-align: -0.05em; border-radius: 6px;
+  background: linear-gradient(90deg, rgba(167, 139, 250, 0.14), rgba(167, 139, 250, 0.4), rgba(167, 139, 250, 0.14));
+  background-size: 300% 100%; background-attachment: fixed; animation: shimmer 2.2s linear infinite; }
+@keyframes shimmer { from { background-position: 100% 0; } to { background-position: -200% 0; } }
+.new { display: inline-block; background: var(--new); color: #1A1300; border-radius: 6px; padding: 0 2px;
+  box-shadow: 0 0 18px rgba(252, 211, 77, 0.55); animation: pop 0.45s ease-out; }
+@keyframes pop { from { transform: scale(1.35); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.given { color: var(--given); }
+.eos { display: inline-block; color: var(--muted); font-family: 'Inter', sans-serif; font-size: 0.7rem;
+  border: 1px solid var(--line); border-radius: 999px; padding: 0 0.5rem; margin: 0 0.3rem; vertical-align: middle; }
+
+details { margin-top: 2rem; border: 1px solid var(--line); border-radius: 14px; padding: 0.8rem 1rem; background: rgba(167, 139, 250, 0.03); }
+summary { cursor: pointer; color: var(--text); font-weight: 500; }
+.how { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: 1rem; margin-top: 1rem; }
+.how div { border: 1px solid var(--line); border-radius: 14px; padding: 1rem 1.1rem; background: rgba(167, 139, 250, 0.04); }
+.how b { display: block; font-family: 'Fraunces', Georgia, serif; font-size: 1.05rem; margin-bottom: 0.3rem; color: var(--text); }
+.how span { color: var(--muted); font-size: 0.92rem; }
+.how .num { color: var(--accent); font-weight: 600; }
+.credit { color: var(--muted); font-size: 0.8rem; text-align: center; margin-top: 2rem; opacity: 0.8; }
+
+@media (max-width: 860px) {
+  .main.pg, .cards.two { grid-template-columns: 1fr; }
+  .cards.one { width: 100%; }
+}
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="top">
+    <div>
+      <div class="eyebrow">Masked diffusion language model · LLaDA, in miniature</div>
+      <div class="title">Mini-LLaDA</div>
+      <p class="subtitle">Stories don't have to be written left to right. This model starts from a fully masked
+        page and reveals the text a few tokens at a time, each step looking at both sides of every gap.</p>
+      <div id="model-chips"></div>
+    </div>
+    <div class="seg" id="mode">
+      <button data-v="presentation" class="on">Presentation</button><button data-v="playground">Playground</button>
+    </div>
+  </header>
+
+  <div class="main" id="main">
+    <aside class="panel" id="panel" hidden>
+      <h3>Story</h3>
+      <label>Beginning<input id="prompt" value="Once upon a time"></label>
+      <label>Ending (optional, for infilling)<input id="suffix"></label>
+      <label>Tokens to generate <output></output><input type="range" id="length" min="8" max="240" value="128"></label>
+      <h3>Sampling</h3>
+      <label>Temperature <output></output><input type="range" id="temperature" min="0" max="1.5" step="0.05" value="0.8"></label>
+      <label>Seed<input type="number" id="seed" min="0" max="10000" value="0"></label>
+      <label>Slow motion (s per step) <output></output><input type="range" id="delay" min="0" max="0.5" step="0.05" value="0"></label>
+      <h3>Run A</h3>
+      <div id="runA"></div>
+      <label class="toggle"><input type="checkbox" id="compare"> Compare with a second run</label>
+      <div id="runB" hidden><h3>Run B</h3></div>
+    </aside>
+
+    <section>
+      <div id="presentation">
+        <div class="scenes" id="scenes"></div>
+        <div class="row">
+          <div id="scene-head"></div>
+          <button class="primary" id="play">▶&nbsp; Play</button>
+        </div>
+      </div>
+      <div class="row">
+        <div class="legend">
+          <span><span class="m"></span> masked</span>
+          <span><span class="new">just revealed</span></span>
+          <span><span class="given">given text</span></span>
+        </div>
+        <button class="primary" id="generate" hidden>▶&nbsp; Generate</button>
+      </div>
+      <div id="cards"></div>
+    </section>
+  </div>
+
+  <details>
+    <summary>How it works</summary>
+    <div class="how">
+      <div><span class="num">1</span><b>Start from noise</b><span>The answer begins fully masked. Only the prompt is given.</span></div>
+      <div><span class="num">2</span><b>Predict every mask at once</b><span>A bidirectional transformer guesses all masked tokens in parallel, using context on both sides.</span></div>
+      <div><span class="num">3</span><b>Keep a few, remask the rest</b><span>The most confident (or random) guesses are kept. The others are masked again and predicted at the next step.</span></div>
+      <div><span class="num">4</span><b>Repeat until nothing is masked</b><span>Fewer steps is faster, but tokens revealed together cannot see each other: quality drops.</span></div>
+    </div>
+  </details>
+  <div class="credit">Re-implementation at small scale of <i>Large Language Diffusion Models</i>
+    (Nie et al., 2025) · trained from scratch on TinyStories</div>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
+const chips = items => `<div class="chips">${items.map(i => `<span class="chip">${esc(i)}</span>`).join("")}</div>`;
+
+let INFO, mode = "presentation", scene = 0, controller = null;
+const results = {};  // settings (as JSON) -> final [state, seconds] of each run, to show again without regenerating
+
+// ---------------- rendering ----------------
+function renderTokens(state, prev, given) {
+  // Same phase for every mask pill, even when the card is redrawn, so the shimmer does not restart at each step.
+  const phase = `style="animation-delay:${-(performance.now() % 2200)}ms"`;
+  return state.map((t, i) => {
+    if (t === INFO.mask_id) return `<span class="m" ${phase}></span>`;
+    if (t === INFO.eos_id) return '<span class="eos">end</span><br>';
+    const text = esc(INFO.vocab[t]).replace(/\n/g, "<br>");
+    const [space, word] = text.startsWith(" ") ? [" ", text.slice(1)] : ["", text];  // keep the space outside the pill
+    if (given.has(i)) return `${space}<span class="given">${word}</span>`;
+    if (prev && prev[i] === INFO.mask_id) return `${space}<span class="new">${word}</span>`;
+    return text;
+  }).join("");
+}
+
+function card(run, state, prev, step, seconds) {
+  const left = state.filter(t => t === INFO.mask_id).length;
+  const done = 100 * (1 - left / Math.max(1, run.n_masks));
+  const foot = `step ${step} / ${run.steps}` + (left === 0 && step > 0 ? " · done" : "");
+  return `<div class="card"><div class="card-head"><div class="card-title">${esc(run.title)}</div>${chips(run.chips)}</div>
+    <div class="bar"><div style="width:${done.toFixed(1)}%"></div></div>
+    <div class="story">${renderTokens(state, prev, run.given)}</div>
+    <div class="card-foot"><span>${foot}</span><span>${left} masked</span><span>${seconds.toFixed(1)} s compute</span></div></div>`;
+}
+
+function showError(msg) { $("#cards").className = ""; $("#cards").innerHTML = `<div class="error">${esc(msg)}</div>`; }
+
+// ---------------- generation ----------------
+async function show(settings, delay, play) {
+  // Draw the cards. If play, stream and animate the generation; otherwise show the last result for these settings.
+  controller?.abort();
+  const ctrl = controller = new AbortController();
+  const key = JSON.stringify(settings);
+  let runs, boxes, prev, finals;
+  const handle = ev => {
+    if (ev.runs) {
+      runs = ev.runs.map(r => ({...r, n_masks: r.ids.filter(t => t === INFO.mask_id).length,
+                                given: new Set(r.ids.flatMap((t, i) => t === INFO.mask_id ? [] : [i]))}));
+      $("#cards").className = "cards " + (runs.length === 1 ? "one" : "two");
+      $("#cards").innerHTML = runs.map(() => "<div></div>").join("");
+      boxes = [...$("#cards").children];
+      prev = runs.map(() => null);
+      finals = [];
+      runs.forEach((r, j) => {
+        const cached = !play && results[key];
+        boxes[j].innerHTML = cached ? card(r, cached[j][0], cached[j][0], r.steps, cached[j][1]) : card(r, r.ids, null, 0, 0);
+      });
+    } else if (ev.done) {  // finished: show once more without highlights
+      boxes[ev.run].innerHTML = card(runs[ev.run], prev[ev.run], prev[ev.run], runs[ev.run].steps, ev.seconds);
+      finals[ev.run] = [prev[ev.run], ev.seconds];
+      if (finals.filter(Boolean).length === runs.length) results[key] = finals;
+    } else {
+      boxes[ev.run].innerHTML = card(runs[ev.run], ev.state, prev[ev.run], ev.step, ev.seconds);
+      prev[ev.run] = ev.state;
+    }
+  };
+  try {
+    const res = await fetch(play ? "/generate" : "/prepare",
+                            {method: "POST", body: JSON.stringify({...settings, delay}), signal: ctrl.signal});
+    if (!res.ok) return showError((await res.json()).error);
+    const reader = res.body.getReader(), decoder = new TextDecoder();
+    let buf = "";
+    for (;;) {  // one JSON object per line
+      const {value, done} = await reader.read();
+      if (done) break;
+      buf += decoder.decode(value, {stream: true});
+      let n;
+      while ((n = buf.indexOf("\n")) >= 0) { handle(JSON.parse(buf.slice(0, n))); buf = buf.slice(n + 1); }
+    }
+  } catch (e) {
+    if (e.name !== "AbortError") showError("Cannot reach the server. Is `uv run app.py` still running?");
+  }
+}
+
+// ---------------- presentation ----------------
+function sceneSettings() {
+  const {prompt, suffix, length, temperature, seed, runs} = INFO.scenes[scene];
+  return {prompt, suffix, length, temperature, seed, runs};
+}
+
+function drawScenes() {
+  $("#scenes").innerHTML = INFO.scenes.map((sc, i) =>
+    `<button class="scene-btn${i === scene ? " on" : ""}" data-i="${i}">${String(i + 1).padStart(2, "0")}
+       <strong>${esc(sc.title)}</strong>${esc(sc.tag)}</button>`).join("");
+  const sc = INFO.scenes[scene];
+  $("#scene-head").innerHTML = `<div class="scene-head"><span class="scene-num">${String(scene + 1).padStart(2, "0")}</span>
+      <span class="scene-title">${esc(sc.title)}</span><span class="scene-tag">${esc(sc.tag)}</span></div>
+    <div class="note"><b>What to look at</b>${esc(sc.note)}</div>`;
+}
+
+$("#scenes").addEventListener("click", e => {
+  const b = e.target.closest(".scene-btn");
+  if (!b) return;
+  scene = +b.dataset.i;
+  drawScenes();
+  show(sceneSettings(), INFO.scenes[scene].delay, true);
+});
+$("#play").addEventListener("click", () => show(sceneSettings(), INFO.scenes[scene].delay, true));
+
+// ---------------- playground ----------------
+function runControls(label, steps) {
+  const opts = INFO.checkpoints.map((c, i) =>
+    `<option value="${esc(c.path)}"${i === INFO.checkpoints.length - 1 ? " selected" : ""}>training step ${c.step.toLocaleString("en")}</option>`).join("");
+  $("#run" + label).insertAdjacentHTML("beforeend", `
+    <label>Checkpoint<select id="ckpt${label}">${opts}</select></label>
+    <label>Denoising steps <output></output><input type="range" id="steps${label}" min="1" max="256" value="${steps}"></label>
+    <label>Remasking<br><span class="seg" id="strat${label}"><button data-v="confidence" class="on">confidence</button><button data-v="random">random</button></span></label>`);
+}
+
+function playgroundSettings() {
+  const run = l => ({ckpt: $("#ckpt" + l).value, steps: +$("#steps" + l).value,
+                     strategy: $(`#strat${l} .on`).dataset.v});
+  return {prompt: $("#prompt").value, suffix: $("#suffix").value, length: +$("#length").value,
+          temperature: +$("#temperature").value, seed: Math.min(10000, Math.max(0, Math.floor(+$("#seed").value || 0))),
+          runs: $("#compare").checked ? [run("A"), run("B")] : [run("A")]};
+}
+
+let timer;
+function preview() {  // settings changed: show the masked input (or the cached result), without generating
+  clearTimeout(timer);
+  timer = setTimeout(() => show(playgroundSettings(), 0, false), 250);
+}
+
+function setupPlayground() {
+  runControls("A", 128);
+  runControls("B", 8);
+  $("#panel").querySelectorAll("label").forEach(l => {  // sliders show their value
+    const out = l.querySelector("output"), input = l.querySelector("input[type=range]");
+    if (out) { const upd = () => out.textContent = input.value; upd(); input.addEventListener("input", upd); }
+  });
+  $("#panel").addEventListener("click", e => {  // segmented controls
+    const b = e.target.closest(".seg button");
+    if (!b) return;
+    e.preventDefault();
+    b.parentElement.querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b));
+    preview();
+  });
+  $("#compare").addEventListener("change", () => { $("#runB").hidden = !$("#compare").checked; });
+  $("#panel").addEventListener("input", e => { if (e.target.id !== "delay") preview(); });
+  $("#generate").addEventListener("click", () => show(playgroundSettings(), +$("#delay").value, true));
+}
+
+// ---------------- page ----------------
+function setMode(m) {
+  mode = m;
+  $("#mode").querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.v === m));
+  const pg = m === "playground";
+  $("#main").classList.toggle("pg", pg);
+  $("#panel").hidden = $("#generate").hidden = !pg;
+  $("#presentation").hidden = pg;
+  if (pg) show(playgroundSettings(), 0, false);
+  else show(sceneSettings(), 0, false);
+}
+$("#mode").addEventListener("click", e => { const b = e.target.closest("button"); if (b) setMode(b.dataset.v); });
+
+fetch("/info").then(r => r.json()).then(info => {
+  INFO = info;
+  const last = INFO.checkpoints.at(-1).step.toLocaleString("en");
+  $("#model-chips").innerHTML = chips([`${Math.round(INFO.params_m)}M parameters`, `${INFO.layers} layers · ${INFO.dim} dim`,
+    "bidirectional attention", "TinyStories · 8k BPE", `${last} training steps on one T4`]);
+  drawScenes();
+  setupPlayground();
+  setMode("presentation");
+}).catch(() => showError("Cannot reach the server. Start it with `uv run app.py`."));
+</script>
+</body>
+</html>
